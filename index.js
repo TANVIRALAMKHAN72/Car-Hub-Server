@@ -22,10 +22,9 @@ const client = new MongoClient(
   }
 );
 
-// Connect once at startup
 async function connectDB() {
   try {
-    await client.connect();
+    // await client.connect();
     console.log("✅ MongoDB connected successfully");
   } catch (err) {
     console.error("❌ MongoDB connection error:", err);
@@ -36,9 +35,7 @@ connectDB();
 const db = client.db(process.env.DB_NAME);
 const carsCollection = db.collection("cars");
 
-// ========== ROUTES ==========
 
-// GET all cars
 app.get("/cars", async (req, res) => {
   try {
     const cars = await carsCollection.find({}).toArray();
@@ -48,7 +45,6 @@ app.get("/cars", async (req, res) => {
   }
 });
 
-// GET car by id
 app.get("/cars/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -69,7 +65,6 @@ app.get("/cars/:id", async (req, res) => {
   }
 });
 
-// POST - add new car
 app.post("/cars", async (req, res) => {
   try {
     const newCar = req.body;
