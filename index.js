@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { MongoClient, ServerApiVersion, ObjectId } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -8,23 +8,17 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(cors());
+// ✅ CORS fix
+app.use(cors({ origin: "https://carhub-client.vercel.app" }));
 app.use(express.json());
 
 const client = new MongoClient(
-  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_CLUSTER}/?retryWrites=true&w=majority`,
-  {
-    serverApi: {
-      version: ServerApiVersion.v1,
-      strict: true,
-      deprecationErrors: true,
-    },
-  }
+  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_CLUSTER}/?retryWrites=true&w=majority`
 );
 
 async function connectDB() {
   try {
-    // await client.connect();
+    await client.connect(); // uncomment this line
     console.log("✅ MongoDB connected successfully");
   } catch (err) {
     console.error("❌ MongoDB connection error:", err);
@@ -35,7 +29,7 @@ connectDB();
 const db = client.db(process.env.DB_NAME);
 const carsCollection = db.collection("cars");
 
-
+// GET all cars
 app.get("/cars", async (req, res) => {
   try {
     const cars = await carsCollection.find({}).toArray();
@@ -45,6 +39,7 @@ app.get("/cars", async (req, res) => {
   }
 });
 
+// GET car by id
 app.get("/cars/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -54,10 +49,7 @@ app.get("/cars/:id", async (req, res) => {
 
   try {
     const car = await carsCollection.findOne({ _id: new ObjectId(id) });
-
-    if (!car) {
-      return res.status(404).json({ error: "Car not found" });
-    }
+    if (!car) return res.status(404).json({ error: "Car not found" });
 
     res.json(car);
   } catch (error) {
@@ -65,6 +57,7 @@ app.get("/cars/:id", async (req, res) => {
   }
 });
 
+// POST add new car
 app.post("/cars", async (req, res) => {
   try {
     const newCar = req.body;
